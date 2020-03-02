@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    password: k3p4R9A9BgJc
+    url: jdbc:mysql://pipeline-prod.cguaygrmpydj.us-east-1.rds.amazonaws.com:3306/pipelinepro?autoReconnect=true&useSSL=false
+    username: pipelinedbadmin

@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@USSLTCOVM668.solutions.glbsnet.com:1521/EPM11124
+    username: PLANAPP
+    password: PLANAPP   
+    

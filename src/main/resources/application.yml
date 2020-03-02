@@ -1,0 +1,46 @@
+server:
+  port: 8889
+  servlet:
+    context-path: /cbasservice
+spring:
+  profiles:
+    active: dev
+  autoconfigure:
+    exclude: 'org.springframework.boot.autoconfigure.session.SessionAutoConfiguration  '
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        current_session_context_class: org.springframework.orm.hibernate5.SpringSessionContext
+        dialect: org.hibernate.dialect.Oracle12cDialect
+    show-sql: false
+  mail:
+    host: smtp.gmail.com
+    password: C7CotYlsho
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    scheduler:
+      persistence:
+        enabled: false
+        redis:
+          embedded: false
+          enabled: false
+    username: tdlproadvisor@gmail.com
+  session:
+    store-type: NONE
+logging:
+  level:
+    org:
+      hibernate: INFO
+      springframework: INFO
+    root: INFO
+

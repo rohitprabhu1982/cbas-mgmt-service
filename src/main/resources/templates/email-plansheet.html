@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Charge Authorization Email</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>        
+        <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+        <!-- use the font -->
+        <style>
+            body {
+                font-family: 'Roboto', sans-serif;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0;">
+
+        <p th:text="${name + ','}"></p>
+        <p>This email authorizes you to charge this project in accordance with the hours and charge codes below for the period between 
+            <b><span th:text="${timeRange}"></span></b>. 
+            If additional projects or TDLs are approved, this charge authorization will be reissued with updated hours.</p>
+        <p>If you think you will exceed the hours listed below for any of the charge codes, please contact your project manager(s) and include the PMO (Anne, Aimee, Nicole and Courtney) to receive approval
+            prior to charging additional hours.</p>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <td align="left" >
+                        <b>Project</b>
+                    </td>
+                    <td align="left" >
+                        <b>WBS Code</b>
+                    </td>
+                    <th:block th:each="i: ${#numbers.sequence(0, numweeks-1)}">
+                        <td align="right" th:text="${weeknames[i]}">
+                            <b>name</b>
+                        </td>    
+                    </th:block>
+                </tr>    
+            </thead>
+            <tbody>
+                <tr th:each="task : ${wklyplan}">
+                    <td th:text="${task.tdlName}">1</td>
+                    <td th:text="${task.wbsCode}"></td>
+                    <th:block th:each="i: ${#numbers.sequence(0, numweeks-1)}">
+                        <td align="right" th:text="${task.weekhours[i]}">
+                            1
+                        </td>    
+                    </th:block>
+                </tr>                
+            </tbody>
+        </table>
+        <p>Please make sure to follow the guidance below when entering your time:</p>
+        <ul>
+            <li>
+                <b>Bill what you work and work what you bill</b> - enter all time worked and if you think you are going to exceed hours, receive approval from your Project Manager(s) and the PMO as soon as possible.
+            </li>
+            <li>
+                Contact your Project Manager(s) if you have additional questions about the work to be completed for each project.
+            </li>
+        </ul>
+        <br></br>
+        <p th:text="${signature}"></p>
+    </body>
+</html>

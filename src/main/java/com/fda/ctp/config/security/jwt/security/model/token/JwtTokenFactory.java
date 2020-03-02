@@ -1,0 +1,112 @@
+package com.fda.ctp.config.security.jwt.security.model.token;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
+
+import com.fda.ctp.config.security.UserTDL;
+import com.fda.ctp.config.security.jwt.security.config.JwtSettings;
+import com.fda.ctp.config.security.jwt.security.model.Scopes;
+import com.fda.ctp.domain.ResourceEntity;
+import com.fda.ctp.repository.ResourceRepository;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+
+
+@Component
+@PropertySource({"classpath:jwt/jwt-security.properties"})
+public class JwtTokenFactory {
+
+    private final JwtSettings settings;
+
+    @Autowired
+    private Environment env;
+    
+    @Autowired
+    private ResourceRepository resourceRepo;
+
+    @Autowired
+    public JwtTokenFactory(JwtSettings settings) {
+        this.settings = settings;
+    }
+
+    /**
+     * Factory method for issuing new JWT Tokens.
+     *
+     * @param roles
+     * @return
+     */
+    public AccessJwtToken createAccessJwtToken(UserTDL userContext) {
+        if (StringUtils.isBlank(userContext.getUsername())) {
+            throw new IllegalArgumentException("Cannot create JWT Token without username");
+        }
+
+        if (userContext.getAuthorities() == null || userContext.getAuthorities().isEmpty()) {
+            throw new IllegalArgumentException("User doesn't have any privileges");
+        }
+
+        Claims claims = Jwts.claims().setSubject(userContext.getUsername());
+        List<String> authorities = new ArrayList<>();
+        for (GrantedAuthority ga : userContext.getAuthorities()) {
+            authorities.add(ga.getAuthority());
+        }
+
+        claims.put("scopes", authorities);
+        claims.put("expWarnTime", env.getProperty("expirationWarningTime"));
+        claims.put("fullname", userContext.getUser().getFirstName() + " " + userContext.getUser().getLastName());   
+        claims.put("employeeid", userContext.getUser().getEmployeeId());
+        
+        // Flag to indicate if the resource is a contractor or not
+        List<ResourceEntity> resources =  resourceRepo.findByEmployeeID(userContext.getUser().getEmployeeId());
+        if(resources.size() > 0){
+             claims.put("restype", resources.get(0).getTypeCode()) ;   
+             claims.put("resourceid", resources.get(0).getResourceID());
+        }
+
+        DateTime currentTime = new DateTime();
+
+        String accesstoken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuer(env.getProperty("tokenIssuer"))
+                .setIssuedAt(currentTime.toDate())
+                .setExpiration(currentTime.plusMinutes(Integer.parseInt(env.getProperty("tokenExpirationTime"))).toDate())
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("tokenSigningKey"))
+                .compact();
+
+        return new AccessJwtToken(accesstoken, claims);
+    }
+
+    public JwtToken createRefreshToken(UserTDL userContext) {
+        if (StringUtils.isBlank(userContext.getUsername())) {
+            throw new IllegalArgumentException("Cannot create JWT Token without username");
+        }
+
+        DateTime currentTime = new DateTime();
+
+        Claims claims = Jwts.claims().setSubject(userContext.getUsername());
+        claims.put("scopes", Arrays.asList(Scopes.REFRESH_TOKEN.authority()));
+
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .setIssuer(env.getProperty("tokenIssuer"))
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(currentTime.toDate())
+                .setExpiration(currentTime.plusMinutes(Integer.parseInt(env.getProperty("refreshTokenExpTime"))).toDate())
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("tokenSigningKey"))
+                .compact();
+
+        return new AccessJwtToken(token, claims);
+    }
+}
