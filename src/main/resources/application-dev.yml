@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:oracle:thin:@USSLTCOVM668.solutions.glbsnet.com:1521/EPM11124
-    username: PLANAPP
-    password: PLANAPP   
+    url: jdbc:oracle:thin:@d15311532.fda.gov:1532/CTPDVT14
+    username: CTPHYP1
+    password: CTPHYP1   
     
